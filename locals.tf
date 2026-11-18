@@ -1,19 +1,18 @@
 locals {
-  # Flatten per-key encrypter/decrypter member lists so each grant is an
-  # individually-addressable, non-authoritative IAM member. Keys use the list
-  # index rather than the member string so members only known after apply
-  # (e.g. a new service account's email) still work with for_each.
-  encrypter_grants = flatten([
-    for key_name, key in var.crypto_keys : [
-      for i, m in key.encrypters : { id = "${key_name}/encrypter/${i}", key = key_name, role = "roles/cloudkms.cryptoKeyEncrypter", member = m }
-    ]
-  ])
+  key_roles = {
+    encrypters = "roles/cloudkms.cryptoKeyEncrypter"
+    decrypters = "roles/cloudkms.cryptoKeyDecrypter"
+  }
 
-  decrypter_grants = flatten([
-    for key_name, key in var.crypto_keys : [
-      for i, m in key.decrypters : { id = "${key_name}/decrypter/${i}", key = key_name, role = "roles/cloudkms.cryptoKeyDecrypter", member = m }
-    ]
-  ])
-
-  key_members = { for g in concat(local.encrypter_grants, local.decrypter_grants) : g.id => g }
+  # One entry per key and role that has at least one member. Keys are static
+  # (key name and role), so for_each never depends on member values.
+  key_bindings = merge([
+    for key_name, key in var.crypto_keys : {
+      for field, role in local.key_roles : "${key_name}/${field}" => {
+        key     = key_name
+        role    = role
+        members = key[field]
+      } if length(key[field]) > 0
+    }
+  ]...)
 }

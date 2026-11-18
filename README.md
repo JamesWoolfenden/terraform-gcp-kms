@@ -50,7 +50,7 @@ No modules.
 | Name | Type |
 | ---- | ---- |
 | [google_kms_crypto_key.main](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/kms_crypto_key) | resource |
-| [google_kms_crypto_key_iam_member.main](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/kms_crypto_key_iam_member) | resource |
+| [google_kms_crypto_key_iam_binding.main](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/kms_crypto_key_iam_binding) | resource |
 | [google_kms_key_ring.main](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/kms_key_ring) | resource |
 | [google_kms_key_ring_import_job.main](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/kms_key_ring_import_job) | resource |
 
@@ -58,7 +58,7 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 | ---- | ----------- | ---- | ------- | :------: |
-| <a name="input_crypto_keys"></a> [crypto\_keys](#input\_crypto\_keys) | Map of symmetric ENCRYPT\_DECRYPT crypto keys to create, keyed by key name. rotation\_period is required (at most 90 days), and encrypters/decrypters are IAM members granted roles/cloudkms.cryptoKeyEncrypter and roles/cloudkms.cryptoKeyDecrypter on that key | <pre>map(object({<br/>    rotation_period            = string<br/>    destroy_scheduled_duration = optional(string, "2592000s")<br/>    protection_level           = optional(string, "SOFTWARE")<br/>    algorithm                  = optional(string, "GOOGLE_SYMMETRIC_ENCRYPTION")<br/>    labels                     = optional(map(string), {})<br/>    encrypters                 = optional(list(string), [])<br/>    decrypters                 = optional(list(string), [])<br/>  }))</pre> | n/a | yes |
+| <a name="input_crypto_keys"></a> [crypto\_keys](#input\_crypto\_keys) | Map of symmetric ENCRYPT\_DECRYPT crypto keys to create, keyed by key name. rotation\_period is required (at most 90 days), and encrypters/decrypters are the complete (authoritative) member lists for roles/cloudkms.cryptoKeyEncrypter and roles/cloudkms.cryptoKeyDecrypter on that key | <pre>map(object({<br/>    rotation_period            = string<br/>    destroy_scheduled_duration = optional(string, "2592000s")<br/>    protection_level           = optional(string, "SOFTWARE")<br/>    algorithm                  = optional(string, "GOOGLE_SYMMETRIC_ENCRYPTION")<br/>    labels                     = optional(map(string), {})<br/>    encrypters                 = optional(list(string), [])<br/>    decrypters                 = optional(list(string), [])<br/>  }))</pre> | n/a | yes |
 | <a name="input_import_job"></a> [import\_job](#input\_import\_job) | Optional key-ring import job for bringing externally generated key material into Cloud KMS. Leave null to skip | <pre>object({<br/>    import_job_id    = string<br/>    import_method    = optional(string, "RSA_OAEP_4096_SHA256_AES_256")<br/>    protection_level = optional(string, "HSM")<br/>  })</pre> | `null` | no |
 | <a name="input_labels"></a> [labels](#input\_labels) | Labels applied to every crypto key, for cost allocation and ownership tracking (merged with per-key labels) | `map(string)` | `{}` | no |
 | <a name="input_location"></a> [location](#input\_location) | Location of the key ring, e.g. europe-west2, europe or global. Must match the location of the resources that use the keys | `string` | n/a | yes |

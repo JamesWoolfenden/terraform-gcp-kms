@@ -30,7 +30,7 @@ variable "crypto_keys" {
     encrypters                 = optional(list(string), [])
     decrypters                 = optional(list(string), [])
   }))
-  description = "Map of symmetric ENCRYPT_DECRYPT crypto keys to create, keyed by key name. rotation_period is required (at most 90 days), and encrypters/decrypters are IAM members granted roles/cloudkms.cryptoKeyEncrypter and roles/cloudkms.cryptoKeyDecrypter on that key"
+  description = "Map of symmetric ENCRYPT_DECRYPT crypto keys to create, keyed by key name. rotation_period is required (at most 90 days), and encrypters/decrypters are the complete (authoritative) member lists for roles/cloudkms.cryptoKeyEncrypter and roles/cloudkms.cryptoKeyDecrypter on that key"
 
   validation {
     condition     = length(var.crypto_keys) > 0
@@ -93,6 +93,15 @@ variable "crypto_keys" {
       ]
     ]))
     error_message = "Key encrypters/decrypters must be IAM member strings such as serviceAccount:x@y.iam.gserviceaccount.com or group:team@example.com"
+  }
+
+  validation {
+    condition = alltrue(flatten([
+      for k, v in var.crypto_keys : [
+        for m in concat(v.encrypters, v.decrypters) : !can(regex("(-compute@developer|@appspot)\\.gserviceaccount\\.com$", m))
+      ]
+    ]))
+    error_message = "Key encrypters/decrypters must not be the default Compute Engine or App Engine service accounts; grant a dedicated service account instead"
   }
 }
 

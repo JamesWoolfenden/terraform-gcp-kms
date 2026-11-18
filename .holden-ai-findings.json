@@ -1,0 +1,52 @@
+{
+  "category": "all",
+  "findings": [
+    {
+      "confidence": "high",
+      "explanation": "Key grants were google_kms_crypto_key_iam_member resources keyed by list index (key/encrypter/0, /1, ...). Removing an earlier member shifts every later index, so the plan destroys and re-creates grants whose (key, role, member) identity collides with surviving ones; depending on ordering the destroy lands last and a workload that should keep access loses decrypt mid-apply. The engine can't see index-shift semantics.",
+      "file": "google_kms_crypto_key_iam_member.main.tf",
+      "first_seen": "2026-11-18",
+      "fixable": false,
+      "id": "HOLDEN_AI_001",
+      "last_seen": "2026-11-18",
+      "line": 1,
+      "principle": "reliability",
+      "related_resources": [
+        "local.key_members"
+      ],
+      "remediation": "Use one google_kms_crypto_key_iam_binding per key and role, keyed by static key/role names. The module owns the keys, so authoritative bindings are safe, and they accept members known only after apply.",
+      "resource": "google_kms_crypto_key_iam_member.main",
+      "severity": "MEDIUM",
+      "status": "fixed",
+      "suppression_reason": null,
+      "title": "Key IAM grants keyed by list index: removing a member can drop another member's access mid-apply",
+      "unresolved_since": null
+    },
+    {
+      "confidence": "high",
+      "explanation": "var.crypto_keys validation rejects allUsers/allAuthenticatedUsers but accepts the default Compute Engine and App Engine service accounts, which every VM or App Engine workload in the project runs as by default. Granting one of them encrypt/decrypt widens key access to everything using it. HLD_GCP_210 stayed unresolved because members come from a variable.",
+      "file": "variables.tf",
+      "first_seen": "2026-11-18",
+      "fixable": false,
+      "id": "HOLDEN_AI_002",
+      "last_seen": "2026-11-18",
+      "line": 27,
+      "principle": "identity-and-access",
+      "related_resources": [
+        "google_kms_crypto_key_iam_binding.main"
+      ],
+      "remediation": "Add a validation rejecting members ending in -compute@developer.gserviceaccount.com or @appspot.gserviceaccount.com.",
+      "resource": "variable.crypto_keys",
+      "severity": "MEDIUM",
+      "status": "fixed",
+      "supersedes": "HLD_GCP_210",
+      "suppression_reason": null,
+      "title": "Default compute/App Engine service accounts can be granted key access",
+      "unresolved_since": null
+    }
+  ],
+  "scan_date": "2026-11-18T20:30:00Z",
+  "scan_path": ".",
+  "suggested_policies": [],
+  "suggested_suppressions": []
+}
